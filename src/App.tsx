@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Navbar from './components/Navbar';
 import LoadingScreen from './components/LoadingScreen';
+import ParticleField from './components/ParticleField';
 import ToastContainer from './components/Toast';
 import HeroSection from './sections/HeroSection';
 import FeaturesSection from './sections/FeaturesSection';
@@ -51,6 +52,7 @@ export default function App() {
 
     return (
         <div className="min-h-screen bg-bg-primary text-text-primary selection:bg-neon-blue/30 selection:text-white">
+            <ParticleField />
             <LoadingScreen isLoading={isLoading} />
             <ToastContainer />
 

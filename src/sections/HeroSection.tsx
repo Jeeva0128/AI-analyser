@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Sparkles, Shield, Zap, Star } from 'lucide-react';
-import ParticleField from '../components/ParticleField';
 import TiltCard from '../components/TiltCard';
 import { useStore } from '../store/useStore';
 
@@ -24,8 +23,6 @@ export default function HeroSection() {
 
     return (
         <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20 pb-8 md:pt-16 md:pb-0">
-            <ParticleField />
-
             {/* Ambient gradient blobs */}
             <div className="absolute inset-0 -z-5 overflow-hidden">
                 <div className="absolute top-[15%] left-[10%] w-72 sm:w-96 h-72 sm:h-96 bg-neon-blue/8 rounded-full blur-[100px] sm:blur-[140px]" />
