@@ -1,9 +1,22 @@
-import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, Sparkles, Shield, Zap, Star } from 'lucide-react';
 import ParticleField from '../components/ParticleField';
 import TiltCard from '../components/TiltCard';
+import { useStore } from '../store/useStore';
 
 export default function HeroSection() {
+    const { darkMode } = useStore();
+    const [imageIndex, setImageIndex] = useState(0);
+    const images = ['/images/hero-resume.png', '/images/hero.png'];
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setImageIndex((prev) => (prev + 1) % images.length);
+        }, 5000);
+        return () => clearInterval(interval);
+    }, []);
+
     const scrollToUpload = () => {
         const el = document.getElementById('upload');
         if (el) el.scrollIntoView({ behavior: 'smooth' });
@@ -121,9 +134,21 @@ export default function HeroSection() {
                                 <div className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-neon-cyan/40 to-transparent" style={{ animation: 'scan-line 3.5s ease-in-out infinite' }} />
 
                                 {/* Resume preview */}
-                                <div className="relative">
-                                    <img src="/images/hero-resume.png" alt="AI Resume Analysis" className="w-full rounded-xl sm:rounded-2xl opacity-85" />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-bg-primary/95 via-bg-primary/20 to-transparent rounded-xl sm:rounded-2xl" />
+                                <div className="relative overflow-hidden rounded-xl sm:rounded-2xl">
+                                    <AnimatePresence mode="popLayout">
+                                        <motion.img
+                                            key={imageIndex}
+                                            src={images[imageIndex]}
+                                            alt="AI Resume Analysis"
+                                            className="w-full opacity-85 absolute top-0 left-0"
+                                            initial={{ opacity: 0, y: -40 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: 40 }}
+                                            transition={{ duration: 0.8, ease: "easeInOut" }}
+                                        />
+                                    </AnimatePresence>
+                                    <img src={images[0]} alt="" className="w-full opacity-0 pointer-events-none" aria-hidden="true" />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-bg-primary/95 via-bg-primary/20 to-transparent rounded-xl sm:rounded-2xl pointer-events-none" />
 
                                     {/* Floating liquid glass badges */}
                                     <motion.div

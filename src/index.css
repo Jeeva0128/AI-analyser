@@ -19,17 +19,33 @@
   --glass-border-b: rgba(255, 255, 255, 0.8);
   --glass-shadow-a: rgba(0, 0, 0, 0.05);
   --glass-shadow-b: rgba(0, 0, 0, 0.02);
+
+  --neon-blue: #6366f1;
+  --neon-purple: #8b5cf6;
+  --neon-cyan: #22d3ee;
+  --neon-pink: #f472b6;
+  --neon-green: #34d399;
+  --neon-amber: #fbbf24;
+  --neon-red: #f87171;
+  
+  --grad-main-1: #6366f1;
+  --grad-main-2: #8b5cf6;
+  --grad-text-1: #818cf8;
+  --grad-text-2: #a78bfa;
+  --grad-text-3: #22d3ee;
+  --grad-warm-1: #f472b6;
+  --grad-warm-2: #fbbf24;
 }
 
 :root.dark {
-  --bg-primary: #030712;
-  --bg-secondary: #0a101f;
-  --bg-card: rgba(10, 16, 31, 0.6);
-  --bg-glass: rgba(10, 16, 31, 0.35);
-  --text-primary: #f1f5f9;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  --border-glass: rgba(148, 163, 184, 0.08);
+  --bg-primary: #000000;
+  --bg-secondary: #0a0a0a;
+  --bg-card: rgba(20, 20, 20, 0.6);
+  --bg-glass: rgba(20, 20, 20, 0.35);
+  --text-primary: #ffffff;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+  --border-glass: rgba(255, 255, 255, 0.1);
 
   --glass-bg-0: rgba(255, 255, 255, 0.08);
   --glass-bg-1: rgba(255, 255, 255, 0.05);
@@ -39,6 +55,21 @@
   --glass-border-b: rgba(255, 255, 255, 0.06);
   --glass-shadow-a: rgba(0, 0, 0, 0.3);
   --glass-shadow-b: rgba(0, 0, 0, 0.2);
+  --neon-blue: #6366f1;
+  --neon-purple: #8b5cf6;
+  --neon-cyan: #22d3ee;
+  --neon-pink: #f472b6;
+  --neon-green: #34d399;
+  --neon-amber: #fbbf24;
+  --neon-red: #f87171;
+
+  --grad-main-1: #6366f1;
+  --grad-main-2: #8b5cf6;
+  --grad-text-1: #818cf8;
+  --grad-text-2: #a78bfa;
+  --grad-text-3: #22d3ee;
+  --grad-warm-1: #f472b6;
+  --grad-warm-2: #fbbf24;
 }
 
 @theme {
@@ -46,13 +77,13 @@
     --color-bg-secondary: var(--bg-secondary);
     --color-bg-card: var(--bg-card);
     --color-bg-glass: var(--bg-glass);
-    --color-neon-blue: #6366f1;
-    --color-neon-purple: #8b5cf6;
-    --color-neon-cyan: #22d3ee;
-    --color-neon-pink: #f472b6;
-    --color-neon-green: #34d399;
-    --color-neon-amber: #fbbf24;
-    --color-neon-red: #f87171;
+    --color-neon-blue: var(--neon-blue);
+    --color-neon-purple: var(--neon-purple);
+    --color-neon-cyan: var(--neon-cyan);
+    --color-neon-pink: var(--neon-pink);
+    --color-neon-green: var(--neon-green);
+    --color-neon-amber: var(--neon-amber);
+    --color-neon-red: var(--neon-red);
     --color-text-primary: var(--text-primary);
     --color-text-secondary: var(--text-secondary);
     --color-text-muted: var(--text-muted);
@@ -190,21 +221,21 @@ body {
    ============================================ */
 
 .text-gradient {
-    background: linear-gradient(135deg, #818cf8, #a78bfa, #22d3ee);
+    background: linear-gradient(135deg, var(--grad-text-1), var(--grad-text-2), var(--grad-text-3));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
 
 .text-gradient-warm {
-    background: linear-gradient(135deg, #f472b6, #fbbf24);
+    background: linear-gradient(135deg, var(--grad-warm-1), var(--grad-warm-2));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
 
 .bg-gradient-main {
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    background: linear-gradient(135deg, var(--grad-main-1), var(--grad-main-2));
 }
 
 /* ============================================

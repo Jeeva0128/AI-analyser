@@ -47,17 +47,32 @@ export default function FeaturesSection() {
                             viewport={{ once: true, margin: '-40px' }}
                             transition={{ duration: 0.5, delay: index * 0.06 }}
                         >
-                            <TiltCard glowColor={`${feature.color}18`} className="h-full">
-                                <div className="liquid-card rounded-xl sm:rounded-2xl p-4 sm:p-5 lg:p-6 h-full group">
-                                    <div
-                                        className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center mb-3 sm:mb-4 transition-transform duration-300 group-hover:scale-110"
-                                        style={{ background: `${feature.color}12` }}
-                                    >
-                                        <feature.icon className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: feature.color }} />
+                            <TiltCard glowColor={`${feature.color}30`} className="h-full">
+                                <div className="liquid-card rounded-xl sm:rounded-2xl p-4 sm:p-5 lg:p-6 h-full group relative transition-all duration-500">
+                                    {/* Dynamic Glow Layer */}
+                                    <div 
+                                        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-xl sm:rounded-2xl border-[1px]"
+                                        style={{ 
+                                            borderColor: `${feature.color}50`,
+                                            boxShadow: `0 0 30px -10px ${feature.color}60`,
+                                            background: `linear-gradient(to bottom right, ${feature.color}0C, transparent)`
+                                        }}
+                                    />
+                                    
+                                    <div className="relative z-10">
+                                        <div
+                                            className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center mb-3 sm:mb-4 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3 group-hover:shadow-lg"
+                                            style={{ 
+                                                background: `${feature.color}18`,
+                                                boxShadow: `0 0 15px -3px ${feature.color}40`
+                                            }}
+                                        >
+                                            <feature.icon className="w-5 h-5 sm:w-6 sm:h-6 transition-colors duration-300" style={{ color: feature.color }} />
+                                        </div>
+                                        <h3 className="text-sm sm:text-base font-semibold text-text-primary mb-1.5 sm:mb-2 transition-colors duration-300" style={{ ['--hover-color' as any]: feature.color }}>{feature.title}</h3>
+                                        <p className="text-xs sm:text-sm text-text-secondary leading-relaxed hidden sm:block delay-75">{feature.description}</p>
+                                        <p className="text-[11px] text-text-secondary leading-relaxed sm:hidden delay-75">{feature.description.split('.')[0]}.</p>
                                     </div>
-                                    <h3 className="text-sm sm:text-base font-semibold text-text-primary mb-1.5 sm:mb-2">{feature.title}</h3>
-                                    <p className="text-xs sm:text-sm text-text-secondary leading-relaxed hidden sm:block">{feature.description}</p>
-                                    <p className="text-[11px] text-text-secondary leading-relaxed sm:hidden">{feature.description.split('.')[0]}.</p>
                                 </div>
                             </TiltCard>
                         </motion.div>
