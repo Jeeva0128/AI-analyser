@@ -15,12 +15,20 @@ import { useStore } from './store/useStore';
 
 export default function App() {
     const [isLoading, setIsLoading] = useState(true);
-    const { analysisResult, setCurrentSection } = useStore();
+    const { analysisResult, setCurrentSection, darkMode } = useStore();
 
     useEffect(() => {
         const timer = setTimeout(() => setIsLoading(false), 2200);
         return () => clearTimeout(timer);
     }, []);
+
+    useEffect(() => {
+        if (darkMode) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    }, [darkMode]);
 
     // Track scroll position for nav highlight
     useEffect(() => {
