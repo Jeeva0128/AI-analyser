@@ -3,7 +3,6 @@ import { useDropzone } from 'react-dropzone';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, FileText, X, CheckCircle, Loader2, File, CloudUpload } from 'lucide-react';
 import { useStore } from '../store/useStore';
-import { generateMockAnalysis } from '../lib/mockAnalysis';
 
 export default function UploadSection() {
     const {
@@ -16,40 +15,62 @@ export default function UploadSection() {
     } = useStore();
     const [isDragActive, setIsDragActive] = useState(false);
 
-    const simulateUploadAndAnalysis = useCallback(
+    const uploadAndAnalyze = useCallback(
         async (file: File) => {
             setUploadedFile(file);
             setIsUploading(true);
             setUploadProgress(0);
 
-            for (let i = 0; i <= 100; i += 4) {
-                await new Promise((r) => setTimeout(r, 40));
-                setUploadProgress(Math.min(i, 100));
+            const formData = new FormData();
+            formData.append('resume', file);
+
+            try {
+                const progressInterval = setInterval(() => {
+                    setUploadProgress((prev) => Math.min(prev + 6, 90));
+                }, 80);
+
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                clearInterval(progressInterval);
+                setUploadProgress(100);
+                setIsUploading(false);
+
+                if (!response.ok) {
+                    const err = await response.json().catch(() => ({ error: 'Analysis failed.' }));
+                    throw new Error(err.error || 'Analysis failed.');
+                }
+
+                addToast('Resume uploaded successfully!', 'success');
+                setIsAnalyzing(true);
+
+                const result = await response.json();
+                setAnalysisResult(result);
+                setIsAnalyzing(false);
+
+                addToHistory({
+                    id: Date.now().toString(),
+                    fileName: file.name,
+                    score: result.overallScore,
+                    date: new Date().toISOString().split('T')[0],
+                });
+
+                addToast('AI analysis complete! Scroll down to see results.', 'info');
+
+                setTimeout(() => {
+                    const el = document.getElementById('dashboard');
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }, 600);
+            } catch (err) {
+                setIsUploading(false);
+                setIsAnalyzing(false);
+                const message = err instanceof Error ? err.message : 'Analysis failed. Please try again.';
+                addToast(message, 'error');
+                setUploadedFile(null);
+                setUploadProgress(0);
             }
-            setIsUploading(false);
-            addToast('Resume uploaded successfully!', 'success');
-
-            setIsAnalyzing(true);
-            await new Promise((r) => setTimeout(r, 2800));
-
-            const fileSize = (file.size / 1024).toFixed(1) + ' KB';
-            const result = generateMockAnalysis(file.name, fileSize);
-            setAnalysisResult(result);
-            setIsAnalyzing(false);
-
-            addToHistory({
-                id: Date.now().toString(),
-                fileName: file.name,
-                score: result.overallScore,
-                date: new Date().toISOString().split('T')[0],
-            });
-
-            addToast('AI analysis complete! Scroll down to see results.', 'info');
-
-            setTimeout(() => {
-                const el = document.getElementById('dashboard');
-                if (el) el.scrollIntoView({ behavior: 'smooth' });
-            }, 600);
         },
         [setUploadedFile, setIsUploading, setUploadProgress, setAnalysisResult, setIsAnalyzing, addToast, addToHistory]
     );
@@ -63,10 +84,10 @@ export default function UploadSection() {
                     addToast('File too large. Maximum size is 10MB.', 'error');
                     return;
                 }
-                simulateUploadAndAnalysis(file);
+                uploadAndAnalyze(file);
             }
         },
-        [simulateUploadAndAnalysis, addToast]
+        [uploadAndAnalyze, addToast]
     );
 
     const { getRootProps, getInputProps } = useDropzone({
