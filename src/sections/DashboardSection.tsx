@@ -1,9 +1,12 @@
 import { motion } from 'framer-motion';
-import { BarChart3, TrendingUp, Award, Target } from 'lucide-react';
+import { BarChart3, TrendingUp, Award, Target, Zap } from 'lucide-react';
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from 'recharts';
 import { useStore } from '../store/useStore';
 import CircularProgress from '../components/CircularProgress';
 import TiltCard from '../components/TiltCard';
+import ScoreCard from '../components/ScoreCard';
+import SkillTags from '../components/SkillTags';
+import AnalysisHeader from '../components/AnalysisHeader';
 
 const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -51,71 +54,49 @@ export default function DashboardSection() {
         return '#fbbf24';
     };
 
-    const scoreCards = [
-        { label: 'Overall Score', value: analysisResult.overallScore || 0, icon: Award, color: '#6366f1' },
-        { label: 'ATS Score', value: analysisResult.atsScore || 0, icon: TrendingUp, color: '#8b5cf6' },
-        { label: 'Keyword Match', value: insights.keywordMatch || 70, icon: BarChart3, color: '#22d3ee' },
-        { label: 'Role Fit', value: insights.roleFit || 72, icon: Target, color: '#34d399' },
-    ];
-
     return (
         <section id="dashboard" className="relative py-16 sm:py-20 lg:py-28">
             <div className="absolute bottom-0 right-0 w-[400px] sm:w-[600px] h-[400px] sm:h-[600px] bg-neon-cyan/4 rounded-full blur-[150px] sm:blur-[200px]" />
 
             <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <motion.div
-                    initial={{ opacity: 0, y: 24 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: '-80px' }}
-                    transition={{ duration: 0.6 }}
-                    className="text-center mb-10 sm:mb-14 lg:mb-16"
-                >
-                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full liquid-pill mb-5 sm:mb-6">
-                        <BarChart3 className="w-3.5 h-3.5 text-neon-cyan" />
-                        <span className="text-xs sm:text-sm font-medium text-neon-cyan">Analysis Results</span>
-                    </div>
-                    <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-tight mb-3 sm:mb-4">
-                        Your Resume <span className="text-gradient">Dashboard</span>
-                    </h2>
-                    <p className="text-sm sm:text-base lg:text-lg text-text-secondary max-w-xl sm:max-w-2xl mx-auto">
-                        Here's a comprehensive breakdown of your resume analysis.
-                    </p>
-                </motion.div>
+                <AnalysisHeader
+                    icon={BarChart3}
+                    label="Analysis Results"
+                    title="Your Resume Dashboard"
+                    subtitle="Here's a comprehensive breakdown of your resume analysis with AI-powered insights."
+                    colorClass="text-neon-cyan"
+                />
 
                 {/* Score cards */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5 mb-4 sm:mb-5 lg:mb-6">
-                    {scoreCards.map((card, i) => (
-                        <motion.div
-                            key={card.label}
-                            initial={{ opacity: 0, y: 24 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.5, delay: i * 0.08 }}
-                        >
-                            <TiltCard glowColor={`${card.color}15`}>
-                                <div className="liquid-card rounded-xl sm:rounded-2xl p-4 sm:p-5 lg:p-6">
-                                    <div className="flex items-center justify-between mb-3 sm:mb-4">
-                                        <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center" style={{ background: `${card.color}12` }}>
-                                            <card.icon className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: card.color }} />
-                                        </div>
-                                        <span className="text-[10px] sm:text-xs font-mono text-text-muted">{card.value >= 80 ? 'Excellent' : card.value >= 60 ? 'Good' : 'Needs Work'}</span>
-                                    </div>
-                                    <div className="text-2xl sm:text-3xl font-bold text-text-primary mb-0.5 sm:mb-1">{card.value}<span className="text-base sm:text-lg text-text-muted">%</span></div>
-                                    <div className="text-xs sm:text-sm text-text-secondary">{card.label}</div>
-                                    <div className="mt-2.5 sm:mt-3 h-1 sm:h-1.5 rounded-full bg-white/5 overflow-hidden">
-                                        <motion.div
-                                            className="h-full rounded-full"
-                                            style={{ background: `linear-gradient(90deg, ${card.color}, ${card.color}88)` }}
-                                            initial={{ width: 0 }}
-                                            whileInView={{ width: `${card.value}%` }}
-                                            viewport={{ once: true }}
-                                            transition={{ duration: 1, delay: 0.4 + i * 0.1 }}
-                                        />
-                                    </div>
-                                </div>
-                            </TiltCard>
-                        </motion.div>
-                    ))}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5 mb-6 sm:mb-8 lg:mb-12">
+                    <ScoreCard
+                        label="Overall Score"
+                        value={analysisResult.overallScore || 0}
+                        icon={Award}
+                        color="#6366f1"
+                        index={0}
+                    />
+                    <ScoreCard
+                        label="ATS Score"
+                        value={analysisResult.atsScore || 0}
+                        icon={TrendingUp}
+                        color="#8b5cf6"
+                        index={1}
+                    />
+                    <ScoreCard
+                        label="Keyword Match"
+                        value={insights.keywordMatch || 70}
+                        icon={BarChart3}
+                        color="#22d3ee"
+                        index={2}
+                    />
+                    <ScoreCard
+                        label="Role Fit"
+                        value={insights.roleFit || 72}
+                        icon={Target}
+                        color="#34d399"
+                        index={3}
+                    />
                 </div>
 
                 {/* Main grid */}
@@ -179,28 +160,49 @@ export default function DashboardSection() {
                         transition={{ duration: 0.6, delay: 0.35 }}
                     >
                         <TiltCard>
-                            <div className="liquid-card rounded-xl sm:rounded-2xl p-5 sm:p-6 lg:p-8 h-full">
-                                <h3 className="text-base sm:text-lg font-semibold text-text-primary mb-2 sm:mb-3">Missing Keywords</h3>
-                                <p className="text-xs sm:text-sm text-text-muted mb-3 sm:mb-4">Add these to improve your ATS score</p>
-                                <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                                    {(analysisResult.missingKeywords || []).map((keyword, i) => (
-                                        <motion.span
-                                            key={keyword}
-                                            initial={{ opacity: 0, scale: 0.85 }}
-                                            whileInView={{ opacity: 1, scale: 1 }}
-                                            viewport={{ once: true }}
-                                            transition={{ duration: 0.25, delay: 0.4 + i * 0.04 }}
-                                            className="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs font-medium liquid-pill text-neon-pink cursor-default hover:bg-neon-pink/8 transition-colors"
-                                            style={{ borderColor: 'rgba(244, 114, 182, 0.15)' }}
-                                        >
-                                            {keyword}
-                                        </motion.span>
-                                    ))}
+                            <div className="liquid-card rounded-xl sm:rounded-2xl p-5 sm:p-6 lg:p-8 h-full flex flex-col">
+                                <div className="mb-4">
+                                    <h3 className="text-base sm:text-lg font-semibold text-text-primary mb-1">Missing Keywords</h3>
+                                    <p className="text-xs sm:text-sm text-text-muted">Add these to improve your ATS score</p>
+                                </div>
+                                <div className="flex-1">
+                                    <SkillTags
+                                        skills={analysisResult.missingKeywords || []}
+                                        variant="warning"
+                                        maxVisible={8}
+                                        animate={true}
+                                    />
                                 </div>
                             </div>
                         </TiltCard>
                     </motion.div>
                 </div>
+
+                {/* Skills section */}
+                <motion.div
+                    initial={{ opacity: 0, y: 24 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.6, delay: 0.2 }}
+                    className="mt-6 sm:mt-8 lg:mt-10"
+                >
+                    <TiltCard>
+                        <div className="liquid-card rounded-xl sm:rounded-2xl p-5 sm:p-6 lg:p-8">
+                            <h3 className="text-base sm:text-lg font-semibold text-text-primary mb-1 flex items-center gap-2">
+                                <Zap className="w-5 h-5 text-neon-green" />
+                                Detected Skills
+                            </h3>
+                            <p className="text-xs sm:text-sm text-text-muted mb-5 sm:mb-6">These are the professional skills found in your resume</p>
+                            <SkillTags
+                                skills={skillsArray}
+                                variant="success"
+                                maxVisible={20}
+                                showLevel={false}
+                                animate={true}
+                            />
+                        </div>
+                    </TiltCard>
+                </motion.div>
 
                 {/* Skills Bar Chart */}
                 <motion.div
@@ -212,7 +214,7 @@ export default function DashboardSection() {
                 >
                     <TiltCard>
                         <div className="liquid-card rounded-xl sm:rounded-2xl p-5 sm:p-6 lg:p-8">
-                            <h3 className="text-base sm:text-lg font-semibold text-text-primary mb-4 sm:mb-6">Skills Detected</h3>
+                            <h3 className="text-base sm:text-lg font-semibold text-text-primary mb-4 sm:mb-6">Skill Proficiency</h3>
                             <div className="overflow-x-auto -mx-2 px-2">
                                 <div className="min-w-[500px]">
                                     <ResponsiveContainer width="100%" height={260}>
