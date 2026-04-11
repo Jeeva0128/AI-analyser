@@ -17,6 +17,13 @@ export default function SuggestionsSection() {
     const { analysisResult } = useStore();
     if (!analysisResult) return null;
 
+    // Safely access suggestions array
+    const suggestionsArray = Array.isArray(analysisResult.suggestions) ? analysisResult.suggestions : [];
+    
+    if (suggestionsArray.length === 0) {
+        return null;
+    }
+
     return (
         <section className="relative py-16 sm:py-20 lg:py-28">
             <div className="absolute top-1/2 left-0 w-[400px] sm:w-[500px] h-[400px] sm:h-[500px] bg-neon-purple/4 rounded-full blur-[150px] sm:blur-[200px]" />
@@ -42,13 +49,15 @@ export default function SuggestionsSection() {
                 </motion.div>
 
                 <div className="grid sm:grid-cols-2 gap-3 sm:gap-4 lg:gap-5">
-                    {analysisResult.suggestions.map((suggestion, index) => {
-                        const Icon = iconMap[suggestion.icon] || Lightbulb;
-                        const priority = priorityConfig[suggestion.priority];
+                    {suggestionsArray.map((suggestion, index) => {
+                        const priority = suggestion?.priority ? priorityConfig[suggestion.priority] : priorityConfig.medium;
+                        const Icon = suggestion?.icon ? (iconMap[suggestion.icon] || Lightbulb) : Lightbulb;
+                        const title = suggestion?.title || `Suggestion ${index + 1}`;
+                        const description = suggestion?.description || 'Review and improve this aspect of your resume.';
 
                         return (
                             <motion.div
-                                key={suggestion.title}
+                                key={index}
                                 initial={{ opacity: 0, y: 24 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
@@ -65,7 +74,7 @@ export default function SuggestionsSection() {
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-2 mb-1.5 sm:mb-2 flex-wrap">
-                                                    <h3 className="text-sm sm:text-base font-semibold text-text-primary">{suggestion.title}</h3>
+                                                    <h3 className="text-sm sm:text-base font-semibold text-text-primary">{title}</h3>
                                                     <span
                                                         className={`px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider ${priority.text}`}
                                                         style={{ background: priority.bg, border: `1px solid ${priority.border}` }}
@@ -73,7 +82,7 @@ export default function SuggestionsSection() {
                                                         {priority.label}
                                                     </span>
                                                 </div>
-                                                <p className="text-xs sm:text-sm text-text-secondary leading-relaxed">{suggestion.description}</p>
+                                                <p className="text-xs sm:text-sm text-text-secondary leading-relaxed">{description}</p>
                                                 <motion.button
                                                     whileHover={{ x: 3 }}
                                                     className="mt-2.5 sm:mt-3 flex items-center gap-1 text-xs sm:text-sm font-medium text-neon-blue hover:text-neon-cyan transition-colors"

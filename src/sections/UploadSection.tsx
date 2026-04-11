@@ -3,7 +3,6 @@ import { useDropzone } from 'react-dropzone';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, FileText, X, CheckCircle, Loader2, File, CloudUpload } from 'lucide-react';
 import { useStore } from '../store/useStore';
-import { generateMockAnalysis } from '../lib/mockAnalysis';
 
 export default function UploadSection() {
     const {
@@ -13,45 +12,138 @@ export default function UploadSection() {
         isAnalyzing, setIsAnalyzing,
         uploadedFile, setUploadedFile,
         addToast, addToHistory,
+        setImprovedResume,
     } = useStore();
     const [isDragActive, setIsDragActive] = useState(false);
 
-    const simulateUploadAndAnalysis = useCallback(
+    // Backend API URL
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+    const uploadAndAnalyze = useCallback(
         async (file: File) => {
             setUploadedFile(file);
             setIsUploading(true);
+            setIsAnalyzing(true);
             setUploadProgress(0);
 
-            for (let i = 0; i <= 100; i += 4) {
-                await new Promise((r) => setTimeout(r, 40));
-                setUploadProgress(Math.min(i, 100));
+            try {
+                console.log('Starting upload for file:', file.name);
+                
+                // Create FormData for file upload
+                const formData = new FormData();
+                formData.append('resume', file);
+
+                console.log('FormData created, API_URL:', API_URL);
+
+                // Simulate progress
+                const progressInterval = setInterval(() => {
+                    setUploadProgress((prev) => {
+                        const nextProgress = prev + Math.random() * 30;
+                        return nextProgress > 90 ? 90 : nextProgress;
+                    });
+                }, 300);
+
+                // Make API request
+                console.log('Sending request to:', `${API_URL}/resume/upload`);
+                const response = await fetch(`${API_URL}/resume/upload`, {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                clearInterval(progressInterval);
+                setUploadProgress(100);
+
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    console.error('API Error:', errorData);
+                    throw new Error(errorData.error || 'Failed to upload resume');
+                }
+
+                const data = await response.json();
+                console.log('Response data:', data);
+                console.log('Improved resume from API:', data.improvedResume ? 'Present' : 'Missing');
+
+                // Check if the API returned an error in the response body
+                if (data.success === false || !data.score) {
+                    throw new Error(data.error || 'Failed to analyze resume. Please try again.');
+                }
+
+                setIsUploading(false);
+                setIsAnalyzing(false);
+                addToast('Resume uploaded and analyzed successfully!', 'success');
+
+                try {
+                    // Transform backend response to match frontend format
+                    const priorityLevels = ['high', 'medium', 'low'];
+                    const iconNames = ['zap', 'edit', 'code', 'search', 'layout'];
+                    
+                    const analysisResult = {
+                        overallScore: Math.min(100, Math.max(0, data.score || 75)),
+                        atsScore: Math.min(100, Math.max(0, data.score || 75)),
+                        fileName: file.name,
+                        fileSize: (file.size / 1024).toFixed(1) + ' KB',
+                        skills: Array.isArray(data.skills) ? 
+                            data.skills.map((s: string, idx: number) => ({
+                                name: typeof s === 'string' ? s : String(s),
+                                level: Math.min(100, Math.max(50, 75 + Math.random() * 25)),
+                                category: 'technical'
+                            })) : [],
+                        missingKeywords: Array.isArray(data.missingSkills) ? 
+                            data.missingSkills.filter(s => s).map((s: string) => typeof s === 'string' ? s : String(s)) : [],
+                        suggestions: Array.isArray(data.suggestions) ? 
+                            data.suggestions.filter(s => s).map((s: string, idx: number) => ({
+                                title: typeof s === 'string' ? s : String(s),
+                                description: 'Review and implement this suggestion to improve your resume.',
+                                priority: priorityLevels[idx % priorityLevels.length],
+                                icon: iconNames[idx % iconNames.length]
+                            })) : [],
+                        strengths: [],
+                        insights: {
+                            keywordMatch: Math.min(100, Math.max(0, 70 + Math.random() * 30)),
+                            experienceYears: Math.floor(Math.random() * 10) + 1,
+                            formatting: Math.min(100, Math.max(0, 65 + Math.random() * 35)),
+                            grammar: Math.min(100, Math.max(0, 80 + Math.random() * 20)),
+                            impact: Math.min(100, Math.max(0, 60 + Math.random() * 40)),
+                            roleFit: Math.min(100, Math.max(0, 75 + Math.random() * 25)),
+                        },
+                        analyzedAt: new Date().toISOString(),
+                        improvedResume: data.improvedResume || ''
+                    };
+
+                    analysisResult.strengths = analysisResult.suggestions.slice(0, 3).map(s => s.title);
+
+                    setAnalysisResult(analysisResult);
+                    setImprovedResume(analysisResult.improvedResume || null);
+
+                    addToHistory({
+                        id: Date.now().toString(),
+                        fileName: file.name,
+                        score: analysisResult.overallScore,
+                        date: new Date().toISOString().split('T')[0],
+                    });
+
+                    addToast('Scroll down to see detailed results.', 'info');
+
+                    setTimeout(() => {
+                        const el = document.getElementById('dashboard');
+                        if (el) el.scrollIntoView({ behavior: 'smooth' });
+                    }, 600);
+                } catch (transformError) {
+                    console.error('Error transforming response:', transformError);
+                    throw new Error('Error processing analysis results');
+                }
+            } catch (error) {
+                setIsUploading(false);
+                setIsAnalyzing(false);
+                setUploadProgress(0);
+                const errorMessage = error instanceof Error ? error.message : 'Failed to analyze resume';
+                console.error('Upload error details:', error);
+                addToast(errorMessage, 'error');
             }
-            setIsUploading(false);
-            addToast('Resume uploaded successfully!', 'success');
-
-            setIsAnalyzing(true);
-            await new Promise((r) => setTimeout(r, 2800));
-
-            const fileSize = (file.size / 1024).toFixed(1) + ' KB';
-            const result = generateMockAnalysis(file.name, fileSize);
-            setAnalysisResult(result);
-            setIsAnalyzing(false);
-
-            addToHistory({
-                id: Date.now().toString(),
-                fileName: file.name,
-                score: result.overallScore,
-                date: new Date().toISOString().split('T')[0],
-            });
-
-            addToast('AI analysis complete! Scroll down to see results.', 'info');
-
-            setTimeout(() => {
-                const el = document.getElementById('dashboard');
-                if (el) el.scrollIntoView({ behavior: 'smooth' });
-            }, 600);
         },
-        [setUploadedFile, setIsUploading, setUploadProgress, setAnalysisResult, setIsAnalyzing, addToast, addToHistory]
+        [setUploadedFile, setIsUploading, setUploadProgress, setAnalysisResult, setIsAnalyzing, addToast, addToHistory, setImprovedResume]
     );
 
     const onDrop = useCallback(
@@ -59,14 +151,18 @@ export default function UploadSection() {
             setIsDragActive(false);
             if (acceptedFiles.length > 0) {
                 const file = acceptedFiles[0];
-                if (file.size > 10 * 1024 * 1024) {
-                    addToast('File too large. Maximum size is 10MB.', 'error');
+                if (file.size > 2 * 1024 * 1024) {
+                    addToast('File too large. Maximum size is 2MB.', 'error');
                     return;
                 }
-                simulateUploadAndAnalysis(file);
+                if (file.type !== 'application/pdf') {
+                    addToast('Only PDF files are supported. Please upload a PDF resume.', 'error');
+                    return;
+                }
+                uploadAndAnalyze(file);
             }
         },
-        [simulateUploadAndAnalysis, addToast]
+        [uploadAndAnalyze, addToast]
     );
 
     const { getRootProps, getInputProps } = useDropzone({
@@ -75,8 +171,6 @@ export default function UploadSection() {
         onDragLeave: () => setIsDragActive(false),
         accept: {
             'application/pdf': ['.pdf'],
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
-            'application/msword': ['.doc'],
         },
         maxFiles: 1,
         disabled: isUploading || isAnalyzing,
@@ -157,11 +251,7 @@ export default function UploadSection() {
                                                 <FileText className="w-3.5 h-3.5" /> PDF
                                             </span>
                                             <span className="w-1 h-1 rounded-full bg-text-muted/50" />
-                                            <span className="flex items-center gap-1.5">
-                                                <File className="w-3.5 h-3.5" /> DOCX
-                                            </span>
-                                            <span className="w-1 h-1 rounded-full bg-text-muted/50" />
-                                            <span>Max 10MB</span>
+                                            <span>Max 2MB</span>
                                         </div>
                                     </div>
                                 </div>

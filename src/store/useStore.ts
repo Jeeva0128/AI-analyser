@@ -18,6 +18,7 @@ export interface AnalysisResult {
     fileName: string;
     fileSize: string;
     analyzedAt: string;
+    improvedResume?: string;
 }
 
 export interface UploadHistory {
@@ -47,6 +48,10 @@ interface AppState {
     removeToast: (id: string) => void;
     darkMode: boolean;
     toggleDarkMode: () => void;
+    isPremium: boolean;
+    setIsPremium: (val: boolean) => void;
+    improvedResume: string | null;
+    setImprovedResume: (resume: string | null) => void;
 }
 
 export const useStore = create<AppState>((set) => ({
@@ -79,4 +84,8 @@ export const useStore = create<AppState>((set) => ({
     removeToast: (id) => set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) })),
     darkMode: true,
     toggleDarkMode: () => set((state) => ({ darkMode: !state.darkMode })),
+    isPremium: false,
+    setIsPremium: (val) => set({ isPremium: val }),
+    improvedResume: null,
+    setImprovedResume: (resume) => set({ improvedResume: resume }),
 }));

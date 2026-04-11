@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
   --bg-primary: #f8fafc;
@@ -72,27 +71,6 @@
   --grad-warm-2: #fbbf24;
 }
 
-@theme {
-    --color-bg-primary: var(--bg-primary);
-    --color-bg-secondary: var(--bg-secondary);
-    --color-bg-card: var(--bg-card);
-    --color-bg-glass: var(--bg-glass);
-    --color-neon-blue: var(--neon-blue);
-    --color-neon-purple: var(--neon-purple);
-    --color-neon-cyan: var(--neon-cyan);
-    --color-neon-pink: var(--neon-pink);
-    --color-neon-green: var(--neon-green);
-    --color-neon-amber: var(--neon-amber);
-    --color-neon-red: var(--neon-red);
-    --color-text-primary: var(--text-primary);
-    --color-text-secondary: var(--text-secondary);
-    --color-text-muted: var(--text-muted);
-    --color-border-glass: var(--border-glass);
-    --color-border-glow: rgba(99, 102, 241, 0.25);
-    --font-sans: 'Outfit', system-ui, sans-serif;
-    --font-mono: 'JetBrains Mono', monospace;
-}
-
 * {
     scrollbar-width: thin;
     scrollbar-color: rgba(99, 102, 241, 0.25) transparent;
@@ -104,8 +82,8 @@ html {
 
 body {
     font-family: var(--font-sans);
-    background: var(--color-bg-primary);
-    color: var(--color-text-primary);
+    background: var(--bg-primary);
+    color: var(--text-primary);
     overflow-x: hidden;
 }
 

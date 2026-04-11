@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, Sparkles, Shield, Zap, Star } from 'lucide-react';
+import { ArrowRight, FileText, Shield, Zap, Star } from 'lucide-react';
 import TiltCard from '../components/TiltCard';
 import { useStore } from '../store/useStore';
 
@@ -34,6 +34,34 @@ export default function HeroSection() {
                 <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
                     {/* Left content */}
                     <div className="text-center lg:text-left order-2 lg:order-1">
+                        {/* Resumate AI Logo */}
+                        <motion.div
+                            initial={{ opacity: 0, y: -24 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.6, delay: -0.1 }}
+                            className="inline-flex items-center gap-3 px-4 py-3 rounded-2xl bg-gradient-to-r from-neon-cyan/10 to-neon-blue/10 border border-neon-cyan/30 mb-8 sm:mb-10"
+                        >
+                            <div className="relative">
+                                <div 
+                                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center"
+                                    style={{
+                                        background: 'linear-gradient(135deg, #06b6d4 0%, #0ea5e9 100%)',
+                                    }}
+                                >
+                                    <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                                </div>
+                                <div 
+                                    className="absolute inset-0 rounded-lg bg-gradient-to-br blur-lg opacity-40"
+                                    style={{
+                                        background: 'linear-gradient(135deg, #06b6d4 0%, #0ea5e9 100%)',
+                                    }}
+                                />
+                            </div>
+                            <span className="text-sm sm:text-base font-bold tracking-tight">
+                                Resumate<span className="text-gradient"> AI</span>
+                            </span>
+                        </motion.div>
+
                         {/* Badge */}
                         <motion.div
                             initial={{ opacity: 0, y: 16 }}
@@ -41,7 +69,7 @@ export default function HeroSection() {
                             transition={{ duration: 0.6 }}
                             className="inline-flex items-center gap-2 px-4 py-2 rounded-full liquid-pill mb-6 sm:mb-8"
                         >
-                            <Sparkles className="w-3.5 h-3.5 text-neon-cyan" />
+                            <FileText className="w-3.5 h-3.5 text-neon-cyan" />
                             <span className="text-xs sm:text-sm font-medium text-neon-cyan">Powered by Advanced AI</span>
                         </motion.div>
 
@@ -50,13 +78,23 @@ export default function HeroSection() {
                             initial={{ opacity: 0, y: 24 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.7, delay: 0.1 }}
-                            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold leading-[1.08] tracking-tight mb-5 sm:mb-6"
+                            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold leading-[1.08] tracking-tight mb-2 sm:mb-3"
                         >
                             Analyze Your{' '}
                             <br className="hidden sm:block" />
                             Resume with{' '}
                             <span className="text-gradient">AI Precision</span>
                         </motion.h1>
+
+                        {/* Slogan */}
+                        <motion.p
+                            initial={{ opacity: 0, y: 16 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.7, delay: 0.15 }}
+                            className="text-sm sm:text-base md:text-lg text-neon-cyan font-semibold mb-6 sm:mb-8 italic"
+                        >
+                            "Elevate Your Career, One Resume at a Time"
+                        </motion.p>
 
                         {/* Subtext */}
                         <motion.p

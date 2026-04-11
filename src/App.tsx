@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import Navbar from './components/Navbar';
+import ErrorBoundary from './components/ErrorBoundary';
 import LoadingScreen from './components/LoadingScreen';
 import ParticleField from './components/ParticleField';
 import ToastContainer from './components/Toast';
@@ -8,6 +9,7 @@ import HeroSection from './sections/HeroSection';
 import FeaturesSection from './sections/FeaturesSection';
 import UploadSection from './sections/UploadSection';
 import DashboardSection from './sections/DashboardSection';
+import ImprovedResumeSection from './sections/ImprovedResumeSection';
 import SuggestionsSection from './sections/SuggestionsSection';
 import InsightsSection from './sections/InsightsSection';
 import HistorySection from './sections/HistorySection';
@@ -34,7 +36,7 @@ export default function App() {
     // Track scroll position for nav highlight
     useEffect(() => {
         const handleScroll = () => {
-            const sections = ['home', 'features', 'upload', 'dashboard'];
+            const sections = ['home', 'features', 'upload', 'dashboard', 'improved-resume'];
             for (const id of sections) {
                 const el = document.getElementById(id);
                 if (el) {
@@ -51,36 +53,39 @@ export default function App() {
     }, [setCurrentSection]);
 
     return (
-        <div className="min-h-screen bg-bg-primary text-text-primary selection:bg-neon-blue/30 selection:text-white">
-            <ParticleField />
-            <LoadingScreen isLoading={isLoading} />
-            <ToastContainer />
+        <ErrorBoundary>
+            <div className="min-h-screen bg-bg-primary text-text-primary selection:bg-neon-blue/30 selection:text-white">
+                <ParticleField />
+                <LoadingScreen isLoading={isLoading} />
+                <ToastContainer />
 
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: isLoading ? 0 : 1 }}
-                transition={{ duration: 0.6, delay: 0.1 }}
-            >
-                <Navbar />
-                <main>
-                    <HeroSection />
-                    <FeaturesSection />
-                    <UploadSection />
-                    {analysisResult && (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ duration: 0.8 }}
-                        >
-                            <DashboardSection />
-                            <SuggestionsSection />
-                            <InsightsSection />
-                        </motion.div>
-                    )}
-                    <HistorySection />
-                </main>
-                <FooterSection />
-            </motion.div>
-        </div>
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: isLoading ? 0 : 1 }}
+                    transition={{ duration: 0.6, delay: 0.1 }}
+                >
+                    <Navbar />
+                    <main>
+                        <HeroSection />
+                        <FeaturesSection />
+                        <UploadSection />
+                        {analysisResult && (
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ duration: 0.8 }}
+                            >
+                                <DashboardSection />
+                                <ImprovedResumeSection />
+                                <SuggestionsSection />
+                                <InsightsSection />
+                            </motion.div>
+                        )}
+                        <HistorySection />
+                    </main>
+                    <FooterSection />
+                </motion.div>
+            </div>
+        </ErrorBoundary>
     );
 }

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Brain, Menu, X, Sun, Moon, Home, Layers, Upload, LayoutDashboard } from 'lucide-react';
+import { FileText, Menu, X, Sun, Moon, Home, Layers, Upload, LayoutDashboard, Wand2 } from 'lucide-react';
 import { useStore } from '../store/useStore';
 
 const navLinks = [
@@ -8,6 +8,7 @@ const navLinks = [
     { label: 'Features', section: 'features', icon: Layers },
     { label: 'Upload', section: 'upload', icon: Upload },
     { label: 'Dashboard', section: 'dashboard', icon: LayoutDashboard },
+    { label: 'Improved', section: 'improved-resume', icon: Wand2 },
 ];
 
 export default function Navbar() {
@@ -41,13 +42,23 @@ export default function Navbar() {
                                 onClick={() => scrollToSection('home')}
                             >
                                 <div className="relative">
-                                    <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-neon-blue to-neon-purple flex items-center justify-center">
-                                        <Brain className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                                    <div 
+                                        className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center"
+                                        style={{
+                                            background: 'linear-gradient(135deg, #06b6d4 0%, #0ea5e9 100%)',
+                                        }}
+                                    >
+                                        <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                                     </div>
-                                    <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-neon-blue to-neon-purple blur-xl opacity-30" />
+                                    <div 
+                                        className="absolute inset-0 rounded-xl blur-xl opacity-40"
+                                        style={{
+                                            background: 'linear-gradient(135deg, #06b6d4 0%, #0ea5e9 100%)',
+                                        }}
+                                    />
                                 </div>
-                                <span className="text-base sm:text-lg font-bold tracking-tight text-text-primary hidden xs:inline">
-                                    AI Resume<span className="text-gradient"> Analyzer</span>
+                                <span className="text-sm sm:text-base font-bold tracking-tight text-text-primary">
+                                    Resumate<span className="text-gradient"> AI</span>
                                 </span>
                             </motion.div>
 

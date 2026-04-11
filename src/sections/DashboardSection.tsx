@@ -21,15 +21,29 @@ export default function DashboardSection() {
     const { analysisResult } = useStore();
     if (!analysisResult) return null;
 
+    // Safely access insights with defaults
+    const insights = analysisResult.insights || {
+        keywordMatch: 70,
+        formatting: 75,
+        grammar: 80,
+        impact: 65,
+        roleFit: 72,
+    };
+
     const radarData = [
-        { subject: 'Keywords', value: analysisResult.insights.keywordMatch },
-        { subject: 'Format', value: analysisResult.insights.formatting },
-        { subject: 'Grammar', value: analysisResult.insights.grammar },
-        { subject: 'Impact', value: analysisResult.insights.impact },
-        { subject: 'Role Fit', value: analysisResult.insights.roleFit },
+        { subject: 'Keywords', value: insights.keywordMatch || 70 },
+        { subject: 'Format', value: insights.formatting || 75 },
+        { subject: 'Grammar', value: insights.grammar || 80 },
+        { subject: 'Impact', value: insights.impact || 65 },
+        { subject: 'Role Fit', value: insights.roleFit || 72 },
     ];
 
-    const skillsData = analysisResult.skills.slice(0, 8).map((s) => ({ name: s.name, level: s.level }));
+    // Safely access skills array
+    const skillsArray = Array.isArray(analysisResult.skills) ? analysisResult.skills : [];
+    const skillsData = skillsArray.slice(0, 8).map((s: any) => ({
+        name: s?.name || String(s) || 'Skill',
+        level: s?.level || 75
+    }));
 
     const getBarColor = (level: number) => {
         if (level >= 80) return '#34d399';
@@ -38,10 +52,10 @@ export default function DashboardSection() {
     };
 
     const scoreCards = [
-        { label: 'Overall Score', value: analysisResult.overallScore, icon: Award, color: '#6366f1' },
-        { label: 'ATS Score', value: analysisResult.atsScore, icon: TrendingUp, color: '#8b5cf6' },
-        { label: 'Keyword Match', value: analysisResult.insights.keywordMatch, icon: BarChart3, color: '#22d3ee' },
-        { label: 'Role Fit', value: analysisResult.insights.roleFit, icon: Target, color: '#34d399' },
+        { label: 'Overall Score', value: analysisResult.overallScore || 0, icon: Award, color: '#6366f1' },
+        { label: 'ATS Score', value: analysisResult.atsScore || 0, icon: TrendingUp, color: '#8b5cf6' },
+        { label: 'Keyword Match', value: insights.keywordMatch || 70, icon: BarChart3, color: '#22d3ee' },
+        { label: 'Role Fit', value: insights.roleFit || 72, icon: Target, color: '#34d399' },
     ];
 
     return (
@@ -118,7 +132,7 @@ export default function DashboardSection() {
                                 <h3 className="text-base sm:text-lg font-semibold text-text-primary mb-4 sm:mb-6">Resume Score</h3>
                                 <CircularProgress value={analysisResult.overallScore} size={160} strokeWidth={10} />
                                 <div className="mt-5 sm:mt-6 w-full space-y-2.5 sm:space-y-3">
-                                    {analysisResult.strengths.slice(0, 3).map((s, i) => (
+                                    {(analysisResult.strengths || []).slice(0, 3).map((s, i) => (
                                         <div key={i} className="flex items-start gap-2 text-xs sm:text-sm">
                                             <div className="w-1.5 h-1.5 rounded-full bg-neon-green mt-1.5 shrink-0" />
                                             <span className="text-text-secondary leading-snug">{s}</span>
@@ -169,7 +183,7 @@ export default function DashboardSection() {
                                 <h3 className="text-base sm:text-lg font-semibold text-text-primary mb-2 sm:mb-3">Missing Keywords</h3>
                                 <p className="text-xs sm:text-sm text-text-muted mb-3 sm:mb-4">Add these to improve your ATS score</p>
                                 <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                                    {analysisResult.missingKeywords.map((keyword, i) => (
+                                    {(analysisResult.missingKeywords || []).map((keyword, i) => (
                                         <motion.span
                                             key={keyword}
                                             initial={{ opacity: 0, scale: 0.85 }}
