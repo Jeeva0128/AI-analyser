@@ -195,7 +195,21 @@ Provide ONLY valid JSON response, no additional text or markdown.
         .replace(/```\n?/g, '')
         .trim();
 
+      logger.info('Attempting to parse AI response', { 
+        originalLength: responseText.length,
+        cleanedLength: cleanedText.length,
+        preview: cleanedText.substring(0, 200) 
+      });
+
       const analysis = JSON.parse(cleanedText);
+
+      logger.info('Successfully parsed AI response', { 
+        hasScore: typeof analysis.score === 'number',
+        hasSkills: Array.isArray(analysis.skills),
+        hasMissing: Array.isArray(analysis.missingSkills),
+        hasSuggestions: Array.isArray(analysis.suggestions),
+        score: analysis.score
+      });
 
       // Validate structure
       if (
@@ -204,7 +218,13 @@ Provide ONLY valid JSON response, no additional text or markdown.
         !Array.isArray(analysis.missingSkills) ||
         !Array.isArray(analysis.suggestions)
       ) {
-        throw new Error('Invalid response structure');
+        logger.warn('Invalid response structure detected', {
+          score: typeof analysis.score,
+          skills: Array.isArray(analysis.skills),
+          missingSkills: Array.isArray(analysis.missingSkills),
+          suggestions: Array.isArray(analysis.suggestions)
+        });
+        throw new Error('Invalid response structure from AI');
       }
 
       // Ensure score is within 0-100
@@ -218,15 +238,21 @@ Provide ONLY valid JSON response, no additional text or markdown.
         suggestions: analysis.suggestions.slice(0, 10)
       };
     } catch (error) {
-      logger.error('Error parsing AI response:', error.message);
+      logger.error('Error parsing AI response:', {
+        message: error.message,
+        responseLength: responseText?.length || 0,
+        responsePreview: responseText?.substring(0, 500) || 'N/A',
+        errorType: error.constructor.name
+      });
 
-      // Return default structure if parsing fails
+      // Return error response instead of default fallback
       return {
         success: false,
         score: 0,
         skills: [],
         missingSkills: [],
-        suggestions: ['Unable to analyze resume. Please try again.']
+        suggestions: ['AI analysis parsing failed. Please try uploading your resume again.'],
+        error: 'Failed to parse AI response: ' + error.message
       };
     }
   }

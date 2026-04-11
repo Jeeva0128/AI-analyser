@@ -66,8 +66,14 @@ export default function UploadSection() {
                 console.log('Improved resume from API:', data.improvedResume ? 'Present' : 'Missing');
 
                 // Check if the API returned an error in the response body
-                if (data.success === false || !data.score) {
-                    throw new Error(data.error || 'Failed to analyze resume. Please try again.');
+                if (data.success === false) {
+                    throw new Error(data.suggestions?.[0] || data.error || 'Failed to analyze resume. Please try again.');
+                }
+
+                // Ensure score exists and is valid
+                if (typeof data.score !== 'number' || data.score < 0) {
+                    console.warn('Invalid or missing score in response, received:', data);
+                    throw new Error('Invalid analysis response from server. Please try again.');
                 }
 
                 setIsUploading(false);
@@ -138,8 +144,21 @@ export default function UploadSection() {
                 setIsUploading(false);
                 setIsAnalyzing(false);
                 setUploadProgress(0);
-                const errorMessage = error instanceof Error ? error.message : 'Failed to analyze resume';
-                console.error('Upload error details:', error);
+                
+                let errorMessage = 'Failed to analyze resume';
+                
+                if (error instanceof Error) {
+                    errorMessage = error.message;
+                } else if (typeof error === 'string') {
+                    errorMessage = error;
+                }
+                
+                console.error('Upload error details:', {
+                    error,
+                    message: errorMessage,
+                    type: typeof error
+                });
+                
                 addToast(errorMessage, 'error');
             }
         },
