@@ -35,16 +35,31 @@ app.use(cors({
       'http://localhost:5173',
       'http://localhost:5174',
       'http://localhost:5175',
+      'http://localhost:3000',
+      'http://127.0.0.1:5173',
+      'https://ai-analyser-nu.vercel.app',
       process.env.FRONTEND_URL
-    ];
+    ].filter(Boolean); // Remove undefined/null values
+    
+    // Log for debugging
+    if (origin) {
+      logger.info('CORS Origin check', { 
+        origin, 
+        allowed: allowedOrigins.includes(origin),
+        environment: process.env.NODE_ENV 
+      });
+    }
     
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      logger.warn('CORS blocked origin', { origin, allowed: allowedOrigins });
+      callback(new Error(`CORS Error: Origin '${origin}' not allowed`));
     }
   },
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // Body parser
