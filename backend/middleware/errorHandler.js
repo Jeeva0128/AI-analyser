@@ -45,6 +45,13 @@ export const errorHandler = (err, req, res, next) => {
     });
   }
 
+  if (err.statusCode === 429) {
+    return res.status(429).json({
+      success: false,
+      error: err.message || 'Too many requests'
+    });
+  }
+
   // Generic error
   res.status(err.statusCode || 500).json({
     success: false,

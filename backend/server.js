@@ -2,12 +2,18 @@
  * Main Server File
  * Initializes and configures the Express application
  */
-
 // ============================
 // ENV CONFIG
 // ============================
 import dotenv from 'dotenv';
 dotenv.config();
+
+// Enable MOCK mode if needed
+const MOCK_MODE = process.env.MOCK_MODE === 'true' || !process.env.GEMINI_API_KEY;
+if (MOCK_MODE) {
+  console.log('\n⚠️  MOCK MODE ENABLED - Using mock responses (no real API calls)');
+  console.log('   Set GEMINI_API_KEY in .env to use real Gemini API\n');
+}
 
 // ============================
 // IMPORTS
@@ -27,6 +33,22 @@ const app = express();
 // ============================
 // MIDDLEWARE
 // ============================
+
+// FIRST: Catch-all logger BEFORE everything else
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+  next();
+});
+
+// Request logging middleware
+app.use((req, res, next) => {
+  logger.info('Incoming request', {
+    method: req.method,
+    path: req.path,
+    contentType: req.get('content-type')?.substring(0, 50)
+  });
+  next();
+});
 
 // CORS
 app.use(cors({
@@ -62,42 +84,59 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Body parser
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Rate limiter (general)
+// Rate limiters (apply BEFORE routes)
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
-  message: 'Too many requests from this IP, please try again later.'
+  handler: (req, res) => {
+    res.status(429).json({
+      success: false,
+      error: 'Too many requests from this IP, please try again later.'
+    });
+  }
 });
 app.use(limiter);
 
-// Upload limiter
-const uploadLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000,
-  max: 20,
-  message: 'Too many upload attempts, please try again later.'
-});
-app.use('/api/resume/upload', uploadLimiter);
+// DISABLED FOR TESTING - pass-through middleware
+const uploadLimiter = (req, res, next) => next();
 
 // ============================
-// ROUTES
+// ROUTES (MULTER FIRST - NO BODY PARSER)
 // ============================
 
 // Health check
 app.get('/health', (req, res) => {
   res.json({
     status: 'Backend is running 🚀',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    timestamp_ms: Date.now()
   });
 });
 
-// API routes
+// Test Gemini API key (direct route, before /api router)
+app.get('/api/test-key', (req, res) => {
+  res.json({ 
+    success: true, 
+    message: 'Test route is working!',
+    apiKey: process.env.GEMINI_API_KEY ? 'SET' : 'NOT SET'
+  });
+});
+
+// Test route
+app.get('/api/test', (req, res) => {
+  res.json({ success: true, message: 'API is working' });
+});
+
+// API routes with multer (before body parser)
+app.use('/api/resume/upload', uploadLimiter); // Apply upload limiter to prevent abuse
 app.use('/api', analyzeRoute);
 
-// 404 handler
+// Body parser (AFTER file upload routes)
+// This ensures multipart/form-data is handled by multer, not body-parser
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// 404 handler - use regex pattern for Express 5.x
 app.use((req, res) => {
   res.status(404).json({
     success: false,

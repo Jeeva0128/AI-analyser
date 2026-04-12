@@ -47,41 +47,48 @@ export default function SuggestionCard({
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, y: 24, x: -20 }}
+            whileInView={{ opacity: 1, y: 0, x: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: index * 0.08 }}
+            transition={{ duration: 0.5, delay: index * 0.1, type: "spring" }}
         >
-            <TiltCard glowColor={`${config.color}12`} className="h-full">
-                <div className="liquid-card rounded-xl sm:rounded-2xl p-4 sm:p-5 lg:p-6 h-full group">
-                    <div className="flex items-start gap-3 sm:gap-4">
-                        <div
-                            className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-300 group-hover:scale-110"
-                            style={{ background: config.bg }}
+            <TiltCard glowColor={`${config.color}50`} className="h-full">
+                <div className="liquid-card rounded-xl sm:rounded-2xl p-4 sm:p-5 h-full group relative overflow-hidden border transition-all duration-300" style={{ borderColor: `${config.color}50` }}>
+                    {/* Permanent gradient background */}
+                    <motion.div 
+                        className="absolute inset-0 opacity-10 group-hover:opacity-20 transition-all duration-300" 
+                        style={{ background: `linear-gradient(135deg, ${config.color}, transparent)` }}
+                        whileHover={{ opacity: 0.25 }}
+                    />
+                    
+                    {/* Glowing corner accent - GLOW ON HOVER */}
+                    <div 
+                        className="absolute -right-6 -top-6 w-24 h-24 rounded-full opacity-15 group-hover:opacity-40 transition-all duration-400 blur-2xl group-hover:blur-xl"
+                        style={{ background: config.color, boxShadow: `0 0 25px ${config.color}40` }} 
+                    />
+                    
+                    <div className="relative z-10 flex items-start gap-3">
+                        <motion.div
+                            className="w-11 h-11 rounded-lg flex items-center justify-center shrink-0 shadow-lg border transition-all duration-300"
+                            style={{ background: `${config.bg}`, borderColor: `${config.color}60` }}
+                            whileHover={{ scale: 1.15, rotate: 8, boxShadow: `0 0 15px ${config.color}80` }}
+                            transition={{ type: "spring", stiffness: 200 }}
                         >
-                            <Icon className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: config.color }} />
-                        </div>
+                            <Icon className="w-5.5 h-5.5" style={{ color: config.color }} />
+                        </motion.div>
 
                         <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1.5 sm:mb-2 flex-wrap">
-                                <h3 className="text-sm sm:text-base font-semibold text-text-primary">{title}</h3>
-                                <span
-                                    className={`px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider ${config.text}`}
-                                    style={{ background: config.bg, border: `1px solid ${config.border}` }}
-                                >
-                                    {config.label}
-                                </span>
-                            </div>
-                            <p className="text-xs sm:text-sm text-text-secondary leading-relaxed line-clamp-2">
+                            <h3 className="text-sm font-bold text-text-primary mb-1.5 leading-tight">{title}</h3>
+                            <p className="text-xs text-text-secondary leading-snug line-clamp-2 mb-3">
                                 {description}
                             </p>
-
-                            <motion.button
-                                whileHover={{ x: 3 }}
-                                className="mt-3 sm:mt-4 flex items-center gap-1 text-xs sm:text-sm font-medium text-neon-blue hover:text-neon-cyan transition-colors"
+                            <motion.span
+                                className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase tracking-wider ${config.text} border transition-all duration-300`}
+                                style={{ background: `${config.bg}cc`, borderColor: `${config.color}60` }}
+                                whileHover={{ scale: 1.08, boxShadow: `0 0 12px ${config.color}80` }}
                             >
-                                Learn more <ChevronRight className="w-3.5 h-3.5" />
-                            </motion.button>
+                                {config.label}
+                            </motion.span>
                         </div>
                     </div>
                 </div>

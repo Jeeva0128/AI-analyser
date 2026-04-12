@@ -5,27 +5,92 @@
 
 import express from 'express';
 import multer from 'multer';
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
 import resumeController from '../controllers/resumeController.js';
 import { checkUsageLimit } from '../middleware/usageLimit.js';
 import usageService from '../services/usageService.js';
+import logger from '../utils/logger.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
 
 const router = express.Router();
+const uploadTempDir = path.join(os.tmpdir(), 'ai-resume-analyzer-uploads');
+
+if (!fs.existsSync(uploadTempDir)) {
+  fs.mkdirSync(uploadTempDir, { recursive: true });
+}
 
 // Configure multer for file uploads
 const upload = multer({
-  dest: 'uploads/',
+  dest: uploadTempDir,
   limits: {
     fileSize: 2 * 1024 * 1024 // 2MB limit
   },
-  
   fileFilter: (req, file, cb) => {
-    if (file.mimetype === 'application/pdf') {
-      cb(null, true);
-    } else {
-      cb(new Error('Only PDF files are allowed'));
+    logger.info('Multer file validation', {
+      fieldname: file.fieldname,
+      mimetype: file.mimetype,
+      size: file.size
+    });
+
+    if (file.fieldname !== 'resume') {
+      return cb(new Error('Field name must be "resume"'), false);
     }
+
+    if (file.mimetype !== 'application/pdf') {
+      return cb(new Error('Only PDF files are allowed (application/pdf)'), false);
+    }
+
+    cb(null, true);
   }
 });
+
+// Custom error handler for multer
+const multerErrorHandler = (err, req, res, next) => {
+  if (err instanceof multer.MulterError) {
+    logger.error('Multer error:', {
+      code: err.code,
+      message: err.message,
+      field: err.field,
+      limit: err.limit
+    });
+
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({
+        success: false,
+        error: 'File size exceeds 2MB limit'
+      });
+    }
+    if (err.code === 'LIMIT_FILE_COUNT') {
+      return res.status(400).json({
+        success: false,
+        error: 'Only one file allowed per upload'
+      });
+    }
+    if (err.code === 'LIMIT_UNEXPECTED_FILE') {
+      return res.status(400).json({
+        success: false,
+        error: 'Only "resume" field is allowed'
+      });
+    }
+
+    return res.status(400).json({
+      success: false,
+      error: `Upload error: ${err.message}`
+    });
+  }
+
+  if (err) {
+    logger.error('Non-multer file upload error:', err.message);
+    return res.status(400).json({
+      success: false,
+      error: err.message || 'File upload failed'
+    });
+  }
+
+  next();
+};
 
 /**
  * POST /api/resume/upload
@@ -37,7 +102,8 @@ router.post(
   '/resume/upload',
   checkUsageLimit,
   upload.single('resume'),
-  resumeController.uploadAndAnalyze
+  multerErrorHandler,
+  asyncHandler(resumeController.uploadAndAnalyze)
 );
 
 /**

@@ -55,20 +55,25 @@ export default function DashboardSection() {
     };
 
     return (
-        <section id="dashboard" className="relative py-16 sm:py-20 lg:py-28">
-            <div className="absolute bottom-0 right-0 w-[400px] sm:w-[600px] h-[400px] sm:h-[600px] bg-neon-cyan/4 rounded-full blur-[150px] sm:blur-[200px]" />
-
+        <section id="dashboard" className="relative py-16 sm:py-20 lg:py-28 overflow-hidden">
             <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <AnalysisHeader
-                    icon={BarChart3}
-                    label="Analysis Results"
-                    title="Your Resume Dashboard"
-                    subtitle="Here's a comprehensive breakdown of your resume analysis with AI-powered insights."
-                    colorClass="text-neon-cyan"
-                />
+                <motion.div
+                    initial={{ opacity: 0, y: -20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.6 }}
+                >
+                    <AnalysisHeader
+                        icon={BarChart3}
+                        label="Analysis Results"
+                        title="Your Resume Dashboard"
+                        subtitle="Here's a comprehensive breakdown of your resume analysis with AI-powered insights."
+                        colorClass="text-neon-cyan"
+                    />
+                </motion.div>
 
                 {/* Score cards */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5 mb-6 sm:mb-8 lg:mb-12">
+                <div className="grid grid-cols-2 gap-2.5 sm:gap-4 mb-6 sm:mb-8 lg:mb-10">
                     <ScoreCard
                         label="Overall Score"
                         value={analysisResult.overallScore || 0}
@@ -80,72 +85,43 @@ export default function DashboardSection() {
                         label="ATS Score"
                         value={analysisResult.atsScore || 0}
                         icon={TrendingUp}
-                        color="#8b5cf6"
+                        color="#6366f1"
                         index={1}
                     />
                     <ScoreCard
                         label="Keyword Match"
                         value={insights.keywordMatch || 70}
                         icon={BarChart3}
-                        color="#22d3ee"
+                        color="#6366f1"
                         index={2}
                     />
                     <ScoreCard
                         label="Role Fit"
                         value={insights.roleFit || 72}
                         icon={Target}
-                        color="#34d399"
+                        color="#6366f1"
                         index={3}
                     />
                 </div>
 
-                {/* Main grid */}
-                <div className="grid lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-5">
-                    {/* Circular Score */}
+                {/* Main grid layout */}
+                <div className="grid lg:grid-cols-2 gap-3 sm:gap-4 lg:gap-5">
+                    {/* Radar Chart */}
                     <motion.div
-                        initial={{ opacity: 0, y: 24 }}
-                        whileInView={{ opacity: 1, y: 0 }}
+                        initial={{ opacity: 0, y: 24, scale: 0.95 }}
+                        whileInView={{ opacity: 1, y: 0, scale: 1 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.6, delay: 0.15 }}
                     >
                         <TiltCard>
-                            <div className="liquid-card rounded-xl sm:rounded-2xl p-5 sm:p-6 lg:p-8 flex flex-col items-center">
-                                <h3 className="text-base sm:text-lg font-semibold text-text-primary mb-4 sm:mb-6">Resume Score</h3>
-                                <CircularProgress value={analysisResult.overallScore} size={160} strokeWidth={10} />
-                                <div className="mt-5 sm:mt-6 w-full space-y-2.5 sm:space-y-3">
-                                    {(analysisResult.strengths || []).slice(0, 3).map((s, i) => (
-                                        <div key={i} className="flex items-start gap-2 text-xs sm:text-sm">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-neon-green mt-1.5 shrink-0" />
-                                            <span className="text-text-secondary leading-snug">{s}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </TiltCard>
-                    </motion.div>
-
-                    {/* Radar Chart */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 24 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ duration: 0.6, delay: 0.25 }}
-                    >
-                        <TiltCard>
-                            <div className="liquid-card rounded-xl sm:rounded-2xl p-5 sm:p-6 lg:p-8">
+                            <div className="liquid-card rounded-xl sm:rounded-2xl p-5 sm:p-6 relative overflow-hidden">
                                 <h3 className="text-base sm:text-lg font-semibold text-text-primary mb-3 sm:mb-4">Quality Breakdown</h3>
-                                <ResponsiveContainer width="100%" height={260}>
+                                <ResponsiveContainer width="100%" height={240}>
                                     <RadarChart data={radarData}>
-                                        <PolarGrid stroke="rgba(148, 163, 184, 0.08)" />
-                                        <PolarAngleAxis dataKey="subject" tick={{ fill: '#94a3b8', fontSize: 11 }} />
+                                        <PolarGrid stroke="rgba(148, 163, 184, 0.12)" />
+                                        <PolarAngleAxis dataKey="subject" tick={{ fill: '#cbd5e1', fontSize: 11, fontWeight: 500 }} />
                                         <PolarRadiusAxis tick={false} axisLine={false} domain={[0, 100]} />
-                                        <Radar name="Score" dataKey="value" stroke="#6366f1" fill="url(#radarGrad)" strokeWidth={2} />
-                                        <defs>
-                                            <linearGradient id="radarGrad" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="0%" stopColor="#6366f1" stopOpacity={0.35} />
-                                                <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0.08} />
-                                            </linearGradient>
-                                        </defs>
+                                        <Radar name="Score" dataKey="value" stroke="#6366f1" fill="rgba(99, 102, 241, 0.1)" strokeWidth={2} />
                                     </RadarChart>
                                 </ResponsiveContainer>
                             </div>
@@ -154,22 +130,25 @@ export default function DashboardSection() {
 
                     {/* Missing Keywords */}
                     <motion.div
-                        initial={{ opacity: 0, y: 24 }}
-                        whileInView={{ opacity: 1, y: 0 }}
+                        initial={{ opacity: 0, y: 24, x: 20 }}
+                        whileInView={{ opacity: 1, y: 0, x: 0 }}
                         viewport={{ once: true }}
-                        transition={{ duration: 0.6, delay: 0.35 }}
+                        transition={{ duration: 0.6, delay: 0.25, type: "spring" }}
                     >
                         <TiltCard>
-                            <div className="liquid-card rounded-xl sm:rounded-2xl p-5 sm:p-6 lg:p-8 h-full flex flex-col">
+                            <div className="liquid-card rounded-xl sm:rounded-2xl p-5 sm:p-6 h-full flex flex-col relative overflow-hidden">
                                 <div className="mb-4">
-                                    <h3 className="text-base sm:text-lg font-semibold text-text-primary mb-1">Missing Keywords</h3>
-                                    <p className="text-xs sm:text-sm text-text-muted">Add these to improve your ATS score</p>
+                                    <h3 className="text-base sm:text-lg font-semibold text-text-primary mb-1 flex items-center gap-2">
+                                        <span className="inline-block w-1 h-4 bg-amber-400 rounded-full" />
+                                        Missing Keywords
+                                    </h3>
+                                    <p className="text-xs sm:text-sm text-text-muted">Add these to boost your ATS compatibility</p>
                                 </div>
                                 <div className="flex-1">
                                     <SkillTags
                                         skills={analysisResult.missingKeywords || []}
                                         variant="warning"
-                                        maxVisible={8}
+                                        maxVisible={6}
                                         animate={true}
                                     />
                                 </div>
@@ -178,52 +157,31 @@ export default function DashboardSection() {
                     </motion.div>
                 </div>
 
-                {/* Skills section */}
+                {/* Skills Bar Chart */}
                 <motion.div
-                    initial={{ opacity: 0, y: 24 }}
-                    whileInView={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, y: 24, scale: 0.95 }}
+                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
                     viewport={{ once: true }}
-                    transition={{ duration: 0.6, delay: 0.2 }}
+                    transition={{ duration: 0.6, delay: 0.35 }}
                     className="mt-6 sm:mt-8 lg:mt-10"
                 >
                     <TiltCard>
-                        <div className="liquid-card rounded-xl sm:rounded-2xl p-5 sm:p-6 lg:p-8">
-                            <h3 className="text-base sm:text-lg font-semibold text-text-primary mb-1 flex items-center gap-2">
-                                <Zap className="w-5 h-5 text-neon-green" />
-                                Detected Skills
+                        <div className="liquid-card rounded-xl sm:rounded-2xl p-5 sm:p-6 relative overflow-hidden">
+                            <h3 className="text-base sm:text-lg font-semibold text-text-primary mb-4 sm:mb-5 flex items-center gap-2">
+                                <span className="inline-block p-1.5 bg-gradient-to-br from-emerald-400 to-emerald-500 rounded-lg">
+                                    <Zap className="w-4 h-4 text-white" />
+                                </span>
+                                Top Skills
                             </h3>
-                            <p className="text-xs sm:text-sm text-text-muted mb-5 sm:mb-6">These are the professional skills found in your resume</p>
-                            <SkillTags
-                                skills={skillsArray}
-                                variant="success"
-                                maxVisible={20}
-                                showLevel={false}
-                                animate={true}
-                            />
-                        </div>
-                    </TiltCard>
-                </motion.div>
-
-                {/* Skills Bar Chart */}
-                <motion.div
-                    initial={{ opacity: 0, y: 24 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.6, delay: 0.2 }}
-                    className="mt-3 sm:mt-4 lg:mt-5"
-                >
-                    <TiltCard>
-                        <div className="liquid-card rounded-xl sm:rounded-2xl p-5 sm:p-6 lg:p-8">
-                            <h3 className="text-base sm:text-lg font-semibold text-text-primary mb-4 sm:mb-6">Skill Proficiency</h3>
                             <div className="overflow-x-auto -mx-2 px-2">
-                                <div className="min-w-[500px]">
-                                    <ResponsiveContainer width="100%" height={260}>
+                                <div className="min-w-[400px]">
+                                    <ResponsiveContainer width="100%" height={220}>
                                         <BarChart data={skillsData} barSize={28}>
-                                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.05)" />
-                                            <XAxis dataKey="name" tick={{ fill: '#94a3b8', fontSize: 11 }} axisLine={{ stroke: 'rgba(148, 163, 184, 0.08)' }} />
-                                            <YAxis tick={{ fill: '#64748b', fontSize: 11 }} axisLine={{ stroke: 'rgba(148, 163, 184, 0.08)' }} domain={[0, 100]} />
-                                            <Tooltip content={<CustomTooltip />} />
-                                            <Bar dataKey="level" radius={[6, 6, 0, 0]}>
+                                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.1)" />
+                                            <XAxis dataKey="name" tick={{ fill: '#cbd5e1', fontSize: 11, fontWeight: 500 }} axisLine={{ stroke: 'rgba(148, 163, 184, 0.1)' }} />
+                                            <YAxis tick={{ fill: '#94a3b8', fontSize: 11 }} axisLine={{ stroke: 'rgba(148, 163, 184, 0.1)' }} domain={[0, 100]} />
+                                            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(99, 102, 241, 0.08)' }} />
+                                            <Bar dataKey="level" radius={[8, 8, 0, 0]} isAnimationActive={true} animationDuration={1200}>
                                                 {skillsData.map((entry, index) => (
                                                     <Cell key={`cell-${index}`} fill={getBarColor(entry.level)} />
                                                 ))}

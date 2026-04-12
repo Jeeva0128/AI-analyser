@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, FileText, X, CheckCircle, Loader2, File, CloudUpload } from 'lucide-react';
+import { Upload, FileText, X, CheckCircle, Loader2, CloudUpload } from 'lucide-react';
 import { useStore } from '../store/useStore';
 
 export default function UploadSection() {
@@ -27,43 +27,111 @@ export default function UploadSection() {
             setUploadProgress(0);
 
             try {
-                console.log('Starting upload for file:', file.name);
+                console.log('🚀 Starting upload for file:', file.name);
+                console.log('📌 File details:', { 
+                    size: (file.size / 1024).toFixed(2) + ' KB',
+                    type: file.type,
+                    timestamp: new Date().toISOString()
+                });
                 
                 // Create FormData for file upload
                 const formData = new FormData();
-                formData.append('resume', file);
+                formData.append('resume', file); // MUST be lowercase 'resume'
 
-                console.log('FormData created, API_URL:', API_URL);
+                console.log('📦 FormData created');
+                console.log('🌐 API_URL:', API_URL);
+                console.log('🔗 Full endpoint:', `${API_URL}/resume/upload`);
 
                 // Simulate progress
+                let currentProgress = 0;
                 const progressInterval = setInterval(() => {
-                    setUploadProgress((prev) => {
-                        const nextProgress = prev + Math.random() * 30;
-                        return nextProgress > 90 ? 90 : nextProgress;
-                    });
+                    currentProgress = Math.min(90, currentProgress + Math.random() * 30);
+                    setUploadProgress(currentProgress);
                 }, 300);
 
-                // Make API request
-                console.log('Sending request to:', `${API_URL}/resume/upload`);
-                const response = await fetch(`${API_URL}/resume/upload`, {
-                    method: 'POST',
-                    body: formData,
-                });
+                // Make API request with retry logic for Render cold starts
+                const maxRetries = 2;
+                let lastError: any = null;
+                let response = null;
+
+                for (let attempt = 0; attempt <= maxRetries; attempt++) {
+                    try {
+                        console.log(`📡 Sending request (attempt ${attempt + 1}/${maxRetries + 1})...`);
+                        
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
+                        
+                        response = await fetch(`${API_URL}/resume/upload`, {
+                            method: 'POST',
+                            body: formData,
+                            signal: controller.signal
+                        });
+                        
+                        clearTimeout(timeoutId);
+                        console.log('✅ Response received:', response.status, response.statusText);
+                        break; // Success, exit retry loop
+                    } catch (fetchError: any) {
+                        lastError = fetchError;
+                        console.warn(`⚠️ Request failed (attempt ${attempt + 1}):`, fetchError.message);
+                        
+                        // Retry after delay (exponential backoff)
+                        if (attempt < maxRetries) {
+                            const delayMs = Math.pow(2, attempt) * 1000;
+                            console.log(`⏳ Retrying in ${delayMs}ms...`);
+                            await new Promise(resolve => setTimeout(resolve, delayMs));
+                        }
+                    }
+                }
+
+                // If all retries failed
+                if (!response) {
+                    clearInterval(progressInterval);
+                    throw new Error(
+                        lastError?.message === 'Failed to fetch' 
+                            ? 'Connection failed. The server might be starting up. Please try again in a moment.'
+                            : `Network error: ${lastError?.message || 'Unknown error'}`
+                    );
+                }
 
                 clearInterval(progressInterval);
                 setUploadProgress(100);
 
-                console.log('Response status:', response.status);
+                console.log('📊 Response status:', response.status);
                 
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    console.error('API Error:', errorData);
-                    throw new Error(errorData.error || 'Failed to upload resume');
+                    const rawError = await response.text();
+                    let parsedError: { error?: string; message?: string } | null = null;
+                    try {
+                        parsedError = rawError ? JSON.parse(rawError) : null;
+                    } catch {
+                        parsedError = null;
+                    }
+
+                    const errorData = {
+                        error:
+                            parsedError?.error ||
+                            parsedError?.message ||
+                            rawError.trim() ||
+                            `HTTP ${response.status}: ${response.statusText}`
+                    };
+                    console.error('❌ API Error Response:', errorData);
+                    
+                    // Handle specific error status codes
+                    if (response.status === 503) {
+                        throw new Error('⏳ AI service is temporarily unavailable. Please wait a moment and try again.');
+                    }
+                    
+                    throw new Error(errorData.error || `Server error: ${response.statusText}`);
                 }
 
                 const data = await response.json();
-                console.log('Response data:', data);
-                console.log('Improved resume from API:', data.improvedResume ? 'Present' : 'Missing');
+                console.log('📥 Response data received:', {
+                    success: data.success,
+                    score: data.score,
+                    hasSkills: !!data.skills,
+                    hasSuggestions: !!data.suggestions,
+                    hasImprovedResume: !!data.improvedResume
+                });
 
                 // Check if the API returned an error in the response body
                 if (data.success === false) {
@@ -72,7 +140,7 @@ export default function UploadSection() {
 
                 // Ensure score exists and is valid
                 if (typeof data.score !== 'number' || data.score < 0) {
-                    console.warn('Invalid or missing score in response, received:', data);
+                    console.warn('⚠️ Invalid or missing score in response, received:', data);
                     throw new Error('Invalid analysis response from server. Please try again.');
                 }
 
@@ -97,9 +165,9 @@ export default function UploadSection() {
                                 category: 'technical'
                             })) : [],
                         missingKeywords: Array.isArray(data.missingSkills) ? 
-                            data.missingSkills.filter(s => s).map((s: string) => typeof s === 'string' ? s : String(s)) : [],
+                            data.missingSkills.filter((s: any) => s).map((s: string) => typeof s === 'string' ? s : String(s)) : [],
                         suggestions: Array.isArray(data.suggestions) ? 
-                            data.suggestions.filter(s => s).map((s: string, idx: number) => ({
+                            data.suggestions.filter((s: any) => s).map((s: string, idx: number) => ({
                                 title: typeof s === 'string' ? s : String(s),
                                 description: 'Review and implement this suggestion to improve your resume.',
                                 priority: priorityLevels[idx % priorityLevels.length],
@@ -118,7 +186,7 @@ export default function UploadSection() {
                         improvedResume: data.improvedResume || ''
                     };
 
-                    analysisResult.strengths = analysisResult.suggestions.slice(0, 3).map(s => s.title);
+                    analysisResult.strengths = analysisResult.suggestions.slice(0, 3).map((s: any) => s.title);
 
                     setAnalysisResult(analysisResult);
                     setImprovedResume(analysisResult.improvedResume || null);
@@ -146,20 +214,40 @@ export default function UploadSection() {
                 setUploadProgress(0);
                 
                 let errorMessage = 'Failed to analyze resume';
+                let errorType = 'Unknown error';
                 
                 if (error instanceof Error) {
                     errorMessage = error.message;
+                    errorType = error.name;
                 } else if (typeof error === 'string') {
                     errorMessage = error;
                 }
                 
-                console.error('Upload error details:', {
+                console.error('❌ Upload error details:', {
                     error,
                     message: errorMessage,
-                    type: typeof error
+                    type: errorType,
+                    timestamp: new Date().toISOString(),
+                    apiUrl: API_URL,
+                    fileName: file.name
                 });
                 
-                addToast(errorMessage, 'error');
+                // Provide helpful error messages
+                const userMessage = errorMessage.includes('Connection failed') 
+                    ? errorMessage + ' (Retrying with backoff may help)'
+                    : errorMessage.includes('timeout')
+                    ? 'Request timed out. The server might be busy. Please try again.'
+                    : errorMessage.includes('aborted') || errorMessage.includes('AbortError')
+                    ? 'Request timed out. The server might be busy. Please try again.'
+                    : errorMessage.includes('Usage limit reached') || errorMessage.includes('Too many upload attempts') || errorMessage.includes('Too many requests')
+                    ? errorMessage
+                    : errorMessage.includes('CORS')
+                    ? 'CORS error: Frontend cannot reach backend. Check API_URL and CORS settings.'
+                    : errorMessage.includes('Field name')
+                    ? 'Server configuration error: Invalid form field. Contact support.'
+                    : errorMessage;
+                
+                addToast(userMessage, 'error');
             }
         },
         [setUploadedFile, setIsUploading, setUploadProgress, setAnalysisResult, setIsAnalyzing, addToast, addToHistory, setImprovedResume]
